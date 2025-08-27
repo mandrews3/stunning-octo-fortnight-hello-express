@@ -6,7 +6,198 @@
     <title>barry</title>
 </head>
 <body>
-    <h1>barry page</h1>
-    <a href="/"> home</a>
+  <h1>barry page</h1>
+  <a href="/"> home</a>
+  <p>{{myVar}}</p>
+
+<hr>
+<h2>Live Typing Example</h2>
+<input id="liveInput" type="text" placeholder="Type to save async...">
+<div id="liveResult"></div>
+<h2> data to the server</h2>
+
+<div>
+  <h3>Query Parameter</h3>
+  <input id="queryName" type="text" placeholder="Enter name">
+  <button onclick="sendQuery()">Send Query</button>
+  <div id="queryResult"></div>
+</div>
+
+<div>
+  <h3>URL Parameter</h3>
+  <input id="urlId" type="text" placeholder="Enter id">
+  <button onclick="sendUrl()">Send URL Param</button>
+  <div id="urlResult"></div>
+</div>
+
+
+<div>
+  <h3>POST Body</h3>
+  <input id="bodyName" type="text" placeholder="Enter name">
+  <button onclick="sendBody()">Send POST Body</button>
+  <div id="bodyResult"></div>
+</div>
+
+<hr>
+<h2>Form Example</h2>
+<form id="getForm">
+  <label>GET (query param): </label>
+  <input id="getFormName" name="name" type="text" placeholder="Enter name">
+  <button type="submit">Submit GET</button>
+</form>
+<div id="getFormResult"></div>
+
+<form id="postForm">
+  <label>POST (body): </label>
+  <input id="postFormName" name="name" type="text" placeholder="Enter name">
+  <button type="submit">Submit POST</button>
+</form>
+<div id="postFormResult"></div>
+
+
+
+<script>
+
+function sendQuery() {
+  const name = document.getElementById('queryName').value;
+  fetch(`/api/query?name=${encodeURIComponent(name)}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('queryResult').textContent = data.message;
+    });
+}
+
+function sendUrl() {
+  const id = document.getElementById('urlId').value;
+  fetch(`/api/url/${encodeURIComponent(id)}`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('urlResult').textContent = data.message;
+    });
+}
+
+function sendBody() {
+  const name = document.getElementById('bodyName').value;
+  fetch('/api/body', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('bodyResult').textContent = data.message;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('dom loaded'); 
+
+  //document.getElementById('getForm').addEventListener('submit', function(e) {
+  document.getElementById('getForm').onsubmit = function(e) {
+    e.preventDefault();
+    const name = document.getElementById('getFormName').value;
+    alert(name);  
+    fetch(`/api/query?name=${encodeURIComponent(name)}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('getFormResult').textContent = data.message;
+        console.log('GET form result:', data);
+      })
+      .catch(err => {
+        document.getElementById('getFormResult').textContent = 'Error: ' + err.message;
+        console.error('GET form error:', err);
+      });
+        return false; // prevents default
+    };
+  //   });
+
+  document.getElementById('postForm').onsubmit = function(e) {
+    e.preventDefault();
+    const name = document.getElementById('postFormName').value;
+    fetch('/api/body', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('postFormResult').textContent = data.message;
+        console.log('POST form result:', data);
+      })
+      .catch(err => {
+        document.getElementById('postFormResult').textContent = 'Error: ' + err.message;
+        console.error('POST form error:', err);
+      });
+    return false;
+  };
+
+//   document.getElementById('liveInput').addEventListener('input', function(e) {
+//     const value = e.target.value;
+//     document.getElementById('liveResult').innerHTML = '<span style="font-size:2em;color:green;">✔️</span> Event fired! Value: ' + value;
+//     console.log('Live input event fired:', value);
+//     fetch('/api/live', {
+//       method: 'POST',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({ value })
+//     })
+//       .then(res => {
+//         if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+//         return res.json();
+//       })
+//       .then(data => {
+//         document.getElementById('liveResult').innerHTML += '<br>Server response: ' + data.message;
+//         console.log('Live input fetch response:', data);
+//       })
+//       .catch(err => {
+//         document.getElementById('liveResult').innerHTML += '<br><span style="color:red;">Error: ' + err.message + '</span>';
+//         console.error('Live input fetch error:', err);
+//       });
+//   });
+
+  
+  // Live input: send data to server as user types
+  document.getElementById('liveInput').addEventListener('input', function(e) {
+    const value = e.target.value;
+    document.getElementById('liveResult').innerHTML = '<span style="font-size:2em;color:green;">✔️</span> Event fired! Value: ' + value;
+    console.log('Live input event fired:', value);
+    fetch('/api/live', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('liveResult').innerHTML += '<br>Server response: ' + data.message;
+        console.log('Live input fetch response:', data);
+      })
+      .catch(err => {
+        document.getElementById('liveResult').innerHTML += '<br><span style="color:red;">Error: ' + err.message + '</span>';
+        console.error('Live input fetch error:', err);
+      });
+  });
+
+});
+
+
+// Still fetch /api/barry for demonstration
+fetch('/api/barry')
+  .then(response => response.json())
+  .then(data => {
+    document.body.innerHTML += `<p>API says: ${data.myVar}</p>`;
+  })
+  .catch(err => {
+    document.body.innerHTML += `<p>Error fetching API</p>`;
+  });
+</script>
+
 </body>
 </html>
