@@ -15,14 +15,19 @@ app.get('/', (req, res) => {
 })
 
 // endpoints...middlewares...apis? 
-// send an html file
 
+// send an html file
 app.get('/barry', (req, res) => {
-  // res.send('barry. <a href="/">home</a>')
+ 
   res.sendFile(join(__dirname, 'public', 'barry.html')) 
 
 })
 
+app.get('/api/barry', (req, res) => {
+  // res.send('barry. <a href="/">home</a>')
+  const myVar = 'Hello from server!';
+  res.json({ myVar });
+})
 
 
 app.listen(PORT, () => {
