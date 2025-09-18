@@ -7,16 +7,16 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
 const app = express()
-const PORT = process.env.PORT || 3000; 
+const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 app.use(express.static(join(__dirname, 'public')));
 
-app.use(express.json()); 
+app.use(express.json());
 
 // const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = process.env.MONGO_URI; 
+const uri = process.env.MONGO_URI;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -40,7 +40,7 @@ async function connectDB() {
 connectDB();
 
 // JWT Secret (in production, this should be in .env file)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-for-teaching-only';
+const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-for-demo-only';
 
 // JWT Middleware - Protect routes that require authentication
 function authenticateToken(req, res, next) {
@@ -55,7 +55,7 @@ function authenticateToken(req, res, next) {
     if (err) {
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
-    
+
     req.user = user; // Add user info to request
     next();
   });
@@ -72,8 +72,8 @@ app.get('/', (req, res) => {
 
 // send an html file
 app.get('/barry', (req, res) => {
- 
-  res.sendFile(join(__dirname, 'public', 'barry.html')) 
+
+  res.sendFile(join(__dirname, 'public', 'barry.html'))
 
 })
 
@@ -86,8 +86,8 @@ app.get('/api/barry', (req, res) => {
 app.get('/api/query', (req, res) => {
 
   //console.log("client request with query param:", req.query.name); 
-  const name = req.query.name; 
-  res.json({"message": `Hi, ${name}. How are you?`});
+  const name = req.query.name;
+  res.json({ "message": `Hi, ${name}. How are you?` });
 
   // receivedData.queries.push(req.query.name || 'Guest');
   // const name = req.query.name || 'Guest';
@@ -96,7 +96,7 @@ app.get('/api/query', (req, res) => {
 
 app.get('/api/url/:iaddasfsd', (req, res) => {
 
-  console.log("client request with URL param:", req.params.iaddasfsd); 
+  console.log("client request with URL param:", req.params.iaddasfsd);
   // const name = req.query.name; 
   // res.json({"message": `Hi, ${name}. How are you?`});
 
@@ -105,7 +105,7 @@ app.get('/api/url/:iaddasfsd', (req, res) => {
 
 app.get('/api/body', (req, res) => {
 
-  console.log("client request with POST body:", req.query); 
+  console.log("client request with POST body:", req.query);
   // const name = req.body.name; 
   // res.json({"message": `Hi, ${name}. How are you?`});
 
@@ -118,12 +118,12 @@ app.get('/api/body', (req, res) => {
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+
     // Simple validation
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password are required' });
     }
-    
+
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters long' });
     }
@@ -141,10 +141,10 @@ app.post('/api/auth/register', async (req, res) => {
     // Create user
     const user = { username, password: hashedPassword, createdAt: new Date() };
     const result = await db.collection('users').insertOne(user);
-    
+
     console.log(`✅ New user registered: ${username}`);
-    
-    res.status(201).json({ 
+
+    res.status(201).json({
       message: 'User registered successfully',
       userId: result.insertedId,
       username: username
@@ -159,7 +159,17 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    /* DESTRUCTURING. 
+    The syntax { username, password } = req.body means:
+    Pull out the properties named username and password directly into variables with the same names.
+    So instead of writing:
+       const username = req.body.username;
+       const password = req.body.password;
     
+       you can write it in one compact line.
+    */
+
     // Simple validation
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password are required' });
@@ -178,15 +188,15 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Create JWT token
-    const tokenPayload = { 
-      userId: user._id, 
-      username: user.username 
+    const tokenPayload = {
+      userId: user._id,
+      username: user.username
     };
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '24h' });
-    
+
     console.log(`✅ User logged in: ${username}`);
-    
-    res.json({ 
+
+    res.json({
       message: 'Login successful',
       token: token,
       user: { id: user._id, username: user.username }
@@ -204,11 +214,11 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
       { _id: new ObjectId(req.user.userId) },
       { projection: { password: 0 } } // Don't return password
     );
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
+
     res.json({ user });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get user info: ' + error.message });
@@ -222,24 +232,24 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 app.post('/api/students', authenticateToken, async (req, res) => {
   try {
     const { name, age, grade } = req.body;
-    
+
     // Simple validation
     if (!name || !age || !grade) {
       return res.status(400).json({ error: 'Name, age, and grade are required' });
     }
 
-    const student = { 
-      name, 
-      age: parseInt(age), 
+    const student = {
+      name,
+      age: parseInt(age),
       grade,
       createdBy: req.user.username, // Track who created this student
       createdAt: new Date()
     };
     const result = await db.collection('students').insertOne(student);
-    
+
     console.log(`✅ Student created by ${req.user.username}: ${name}`);
-    
-    res.status(201).json({ 
+
+    res.status(201).json({
       message: 'Student created successfully',
       studentId: result.insertedId,
       student: { ...student, _id: result.insertedId }
@@ -287,9 +297,9 @@ app.put('/api/students/:id', authenticateToken, async (req, res) => {
 
     console.log(`✏️ Student updated by ${req.user.username}: ${id}`);
 
-    res.json({ 
+    res.json({
       message: 'Student updated successfully',
-      modifiedCount: result.modifiedCount 
+      modifiedCount: result.modifiedCount
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update student: ' + error.message });
@@ -314,9 +324,9 @@ app.delete('/api/students/:id', authenticateToken, async (req, res) => {
 
     console.log(`🗑️ Student deleted by ${req.user.username}: ${id}`);
 
-    res.json({ 
+    res.json({
       message: 'Student deleted successfully',
-      deletedCount: result.deletedCount 
+      deletedCount: result.deletedCount
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to delete student: ' + error.message });
@@ -328,7 +338,7 @@ app.post('/api/seed', authenticateToken, async (req, res) => {
   try {
     // First, clear existing data
     await db.collection('students').deleteMany({});
-    
+
     // Sample students for teaching
     const sampleStudents = [
       { name: "Alice Johnson", age: 20, grade: "A", createdBy: req.user.username, createdAt: new Date() },
@@ -342,12 +352,12 @@ app.post('/api/seed', authenticateToken, async (req, res) => {
     ];
 
     const result = await db.collection('students').insertMany(sampleStudents);
-    
+
     console.log(`🌱 Database seeded by ${req.user.username}: ${result.insertedCount} students`);
-    
-    res.json({ 
+
+    res.json({
       message: `Database seeded successfully! Added ${result.insertedCount} sample students.`,
-      insertedCount: result.insertedCount 
+      insertedCount: result.insertedCount
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to seed database: ' + error.message });
@@ -358,12 +368,12 @@ app.post('/api/seed', authenticateToken, async (req, res) => {
 app.delete('/api/cleanup', authenticateToken, async (req, res) => {
   try {
     const result = await db.collection('students').deleteMany({});
-    
+
     console.log(`🧹 Database cleaned by ${req.user.username}: ${result.deletedCount} students removed`);
-    
-    res.json({ 
+
+    res.json({
       message: `Database cleaned successfully! Removed ${result.deletedCount} students.`,
-      deletedCount: result.deletedCount 
+      deletedCount: result.deletedCount
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to cleanup database: ' + error.message });
