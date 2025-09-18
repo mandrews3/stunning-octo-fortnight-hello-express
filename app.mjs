@@ -40,7 +40,7 @@ async function connectDB() {
 connectDB();
 
 // JWT Secret (in production, this should be in .env file)
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-for-demo-only';
+const JWT_SECRET = 'super-secret-key-for-demo-only';
 
 // JWT Middleware - Protect routes that require authentication
 function authenticateToken(req, res, next) {
